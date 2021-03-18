@@ -78,7 +78,6 @@ async def save_to_file(proxy_list):
 if __name__ == '__main__':
     proxy_url = "https://proxy.mimvp.com/freesecret"
     # 定时任务
-    # AsyncIOScheduler : 当你的程序使用了asyncio（一个异步框架）的时候使用
     scheduler = AsyncIOScheduler()
     # 每5分钟获取一次 ip
     scheduler.add_job(parse, 'interval', [proxy_url], minutes=5)

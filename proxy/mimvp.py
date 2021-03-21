@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
-import asyncio
 import aiohttp
-import time
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from lxml import etree
-import tesserocr
+import pytesseract
 from PIL import Image
 import requests
-import db_select
 import sys
 
 sys.path.append("..")
 from setting.db_mysql import DBMysql
 
 db_mysql = DBMysql()
+
+proxy_url = "https://proxy.mimvp.com/freeopen"
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -39,12 +37,15 @@ async def img_recognition(url):
     with open('img.png', 'wb') as f:
         f.write(r)
     image = Image.open("img.png")
-    result = tesserocr.image_to_text(image).strip()
+    result_str = pytesseract.image_to_string(image).strip()
+    result = result_str.replace("B", "8").replace("O", "0").replace("S", "5")\
+        .replace("Z", "2").replace("l","1").replace("g", "9")
     return result
 
 
-async def parse(url):
-    page_text = await parse_url(url)
+async def parse():
+    print("获取米扑代理...")
+    page_text = await parse_url(proxy_url)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath("//div[@class='free-content']/table[@class='mimvp-tbl free-proxylist-tbl']/tbody/tr")
     proxy_list = []
@@ -58,7 +59,7 @@ async def parse(url):
         proxy_str = ip + ":" + port
         proxy_list.append(proxy_str.replace(",", ""))
     await save_to_mysql(proxy_list)
-    # return proxy_list
+    print("获取米扑代理完毕!")
 
 
 async def save_to_mysql(proxy_list):
@@ -73,18 +74,3 @@ async def save_to_file(proxy_list):
         for content in proxy_list:
             f.write(content)
             f.write("\n")
-
-
-if __name__ == '__main__':
-    proxy_url = "https://proxy.mimvp.com/freesecret"
-    # 定时任务
-    scheduler = AsyncIOScheduler()
-    # 每5分钟获取一次 ip
-    scheduler.add_job(parse, 'interval', [proxy_url], minutes=5)
-    scheduler.start()
-    try:
-        asyncio.get_event_loop().run_forever()
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    finally:
-        db_mysql.close_spider()

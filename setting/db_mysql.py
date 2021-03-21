@@ -26,7 +26,7 @@ class DBMysql:
         self.db.commit()
 
     def get(self):
-        sql = 'select proxy from % s' % self.table
+        sql = 'select distinct proxy from % s' % self.table
         self.cursor.execute(sql)
         self.db.commit()
         # 返回多个元组

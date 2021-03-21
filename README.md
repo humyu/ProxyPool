@@ -1,6 +1,7 @@
 # ProxyPool
-- 使用协程实现的简单的ip代理池维护程序
-  - 可从文件或者mysql数据库获取ip
+
+- 使用协程实现ip代理池维护
+  - 文件或者数据库维护ip池
     
 - 定时任务
   - 使用AsyncIOScheduler：当你的程序使用了asyncio（一个异步框架）的时候使用

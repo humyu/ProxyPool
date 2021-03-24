@@ -6,12 +6,13 @@ import sys
 
 sys.path.append("..")
 from setting.db_mysql import DBMysql
-from aiohttp import ClientOSError
+from aiohttp import ClientOSError, ServerDisconnectedError
+from asyncio import TimeoutError
 
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=DATE_FORMAT)
+logging.basicConfig(filename='mylog',filemode='w', level=logging.WARNING, format=LOG_FORMAT, datefmt=DATE_FORMAT)
 
 db_mysql = DBMysql()
 
@@ -29,9 +30,13 @@ async def test(ip, url):
         try:
             async with session.get(url=url, headers=headers, proxy=proxy, timeout=10) as response:
                 return response.status
-        except (TimeoutError, ClientOSError) as e:
-            logging.error(e)
-            return e.args
+        except TimeoutError as te:
+            logging.error(f"超时错误：{te}")
+        except (ClientOSError, ServerDisconnectedError) as cse:
+            logging.error(f"连接错误：{cse}")
+        except Exception as e:
+            logging.exception(e)
+        return
 
 
 async def update():

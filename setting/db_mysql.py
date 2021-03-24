@@ -17,7 +17,7 @@ class DBMysql:
     def close_spider(self):
         self.db.close()
 
-    def insert(self, item):
+    def insert_one(self, item):
         data = dict(item)
         keys = ', '.join(data.keys())
         values = ', '.join(['% s'] * len(data))
@@ -25,7 +25,7 @@ class DBMysql:
         self.cursor.execute(sql, tuple(data.values()))
         self.db.commit()
 
-    def get(self):
+    def get_all(self):
         sql = 'select distinct proxy from % s' % self.table
         self.cursor.execute(sql)
         self.db.commit()
@@ -34,7 +34,7 @@ class DBMysql:
         results = ["".join(i) for i in fetch_list]
         return results
 
-    def delete(self, item):
+    def delete_one(self, item):
         sql = 'delete from % s where proxy = % s' % (self.table, '% s')
         self.cursor.execute(sql, item)
         self.db.commit()

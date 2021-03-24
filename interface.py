@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # 定时任务
     scheduler = AsyncIOScheduler()
     # 每几分钟获取一次 ip
-    # scheduler.add_job(mimvp.parse, 'interval', minutes=1)
+    scheduler.add_job(mimvp.parse, 'interval', minutes=1)
     # scheduler.add_job(kuaidaili.parse, 'interval', minutes=5, max_instances=3)
     # 每天的9点15分清空一次ip池
     scheduler.add_job(db_select.purge, 'cron', hour=9, minute=15)

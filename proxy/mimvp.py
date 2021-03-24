@@ -9,6 +9,7 @@ import sys
 
 sys.path.append("..")
 from setting.db_mysql import DBMysql
+import logging
 
 db_mysql = DBMysql()
 
@@ -44,7 +45,7 @@ async def img_recognition(url):
 
 
 async def parse():
-    print("获取米扑代理...")
+    logging.info("获取米扑代理...")
     page_text = await parse_url(proxy_url)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath("//div[@class='free-content']/table[@class='mimvp-tbl free-proxylist-tbl']/tbody/tr")
@@ -59,13 +60,13 @@ async def parse():
         proxy_str = ip + ":" + port
         proxy_list.append(proxy_str.replace(",", ""))
     await save_to_mysql(proxy_list)
-    print("获取米扑代理完毕!")
+    logging.info("获取米扑代理完毕!")
 
 
 async def save_to_mysql(proxy_list):
     for proxy in proxy_list:
         item = {"proxy": proxy}
-        db_mysql.insert(item)
+        db_mysql.insert_one(item)
 
 
 async def save_to_file(proxy_list):

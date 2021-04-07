@@ -7,8 +7,10 @@ import sys
 
 sys.path.append("..")
 from setting.db_mysql import DBMysql
+from setting.log import Logger
 
 db_mysql = DBMysql()
+logger = Logger.get()
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -27,12 +29,11 @@ async def parse_url(url):
                 page_text = await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
                 return page_text
         except Exception as e:
-            print(e)
-            return
+            logger.error(f"错误:{e}")
 
 
 async def parse():
-    print("获取快代理...")
+    logger.warning("获取快代理...")
     url_list = get_url_list()
     for url in url_list:
         page_text = await parse_url(url)
@@ -48,12 +49,12 @@ async def parse():
             proxy_list.append(proxy.replace(",", ""))
         await save_to_mysql(proxy_list)
         time.sleep(random.randint(1,3))
-    print("获取快代理完毕!")
+    logger.warning("获取快代理完毕!")
 
 
 async def save_to_mysql(proxy_list):
     for proxy in proxy_list:
         item = {"proxy": proxy}
-        db_mysql.insert(item)
+        db_mysql.insert_one(item)
 
 

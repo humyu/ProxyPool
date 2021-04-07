@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import asyncio
-import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from proxy import db_select
 from proxy import mimvp
@@ -18,12 +17,12 @@ if __name__ == '__main__':
     # 定时任务
     scheduler = AsyncIOScheduler()
     # 每几分钟获取一次 ip
-    scheduler.add_job(mimvp.parse, 'interval', minutes=1)
-    # scheduler.add_job(kuaidaili.parse, 'interval', minutes=5, max_instances=3)
+    scheduler.add_job(mimvp.parse, 'interval', minutes=5)
+    # scheduler.add_job(kuaidaili.parse, 'interval', minutes=5)
     # 每天的9点15分清空一次ip池
-    scheduler.add_job(db_select.purge, 'cron', hour=9, minute=15)
+    # scheduler.add_job(db_select.purge, 'cron', hour=9, minute=15)
     # 每分钟更新一次ip
-    scheduler.add_job(db_select.update, 'interval', minutes=1, max_instances=10)
+    scheduler.add_job(db_select.update, 'interval', minutes=2)
     scheduler.start()
     try:
         asyncio.get_event_loop().run_forever()

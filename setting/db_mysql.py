@@ -25,8 +25,14 @@ class DBMysql:
         self.cursor.execute(sql, tuple(data.values()))
         self.db.commit()
 
+    def insert_many(self, item_list):
+        tuple_list = [(item,5,0) for item in item_list]
+        sql = 'insert into t_proxy (ip,score,times) values (% s, % s, % s)'
+        self.cursor.executemany(sql, tuple_list)
+        self.db.commit()
+
     def get_all(self):
-        sql = 'select distinct proxy from % s' % self.table
+        sql = 'select distinct ip from % s' % self.table
         self.cursor.execute(sql)
         self.db.commit()
         # 返回多个元组
@@ -35,7 +41,7 @@ class DBMysql:
         return results
 
     def delete_one(self, item):
-        sql = 'delete from % s where proxy = % s' % (self.table, '% s')
+        sql = 'delete from % s where ip = % s' % (self.table, '% s')
         self.cursor.execute(sql, item)
         self.db.commit()
 
@@ -43,3 +49,6 @@ class DBMysql:
         sql = 'delete from % s ' % self.table
         self.cursor.execute(sql)
         self.db.commit()
+
+    def update_score(self, item):
+        pass

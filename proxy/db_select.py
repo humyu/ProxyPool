@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
-import aiohttp
-import random
-import logging
 import sys
+
+import aiohttp
 
 sys.path.append("..")
 from setting.db_mysql import DBMysql
-from aiohttp import ClientOSError, ServerDisconnectedError
-from asyncio import TimeoutError
-
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
-
-logging.basicConfig(filename='mylog',filemode='w', level=logging.WARNING, format=LOG_FORMAT, datefmt=DATE_FORMAT)
+from setting.log import Logger
+import time
+import random
 
 db_mysql = DBMysql()
+logger = Logger.get()
 
 test_url = "http://httpbin.org/get"
 
@@ -30,47 +26,46 @@ async def test(ip, url):
         try:
             async with session.get(url=url, headers=headers, proxy=proxy, timeout=10) as response:
                 return response.status
-        except TimeoutError as te:
-            logging.error(f"超时错误：{te}")
-        except (ClientOSError, ServerDisconnectedError) as cse:
-            logging.error(f"连接错误：{cse}")
         except Exception as e:
-            logging.exception(e)
-        return
+            logger.error(f"错误:{e}")
+            return "disabled"
 
 
 async def update():
     """更新ip集合，作为定时任务"""
-    logging.info("更新ip池...")
     # 1.从数据库获取ip集
     ip_list = db_mysql.get_all()
-    if not ip_list:
-        logging.info("数据库暂无ip")
-    else:
+    if ip_list:
+        logger.warning("更新ip池...")
         for ip in ip_list:
             # 2.测试单个ip
             status = await test(ip, test_url)
-            # print(f"ip:{ip}:{status}")
-            logging.info(f"ip:{ip}:{status}")
             # 不合格的删除
-            if status != 200:
+            logger.warning(f" {ip} {status}")
+            if status == "disabled":
                 db_mysql.delete_one(ip)
-            ip_list.remove(ip)
-    # print("更新ip池完毕!")
-    logging.info("更新ip池完毕!")
+            # elif status != 200:
+            #     # db_mysql.update_score(ip)
+            #     logger.warning(f" {ip} 超时")
+            # else:
+            #     logger.warning(f" {ip} {status}")
+            time.sleep(random.randint(2, 4))
+        # logger.warning("更新ip池完毕!")
+    else:
+        logger.warning("暂无ip,请等待...")
 
 
 def purge():
     """清空 ip 池"""
     db_mysql.delete_all()
-    logging.info("清空 ip 池!")
+    logger.warning("清空 ip 池!")
 
 
 async def get():
     """接口，作为外部使用的 ip """
     ip_list = db_mysql.get_all()
     if not ip_list:
-        logging.info("数据库暂无ip")
+        logger.warning("暂无ip,请等待...")
     else:
         while True:
             ip = random.choice(ip_list)

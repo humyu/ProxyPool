@@ -32,23 +32,29 @@ class DBMysql:
         self.db.commit()
 
     def get_all(self):
-        sql = 'select distinct ip from % s' % self.table
+        sql = 'select distinct ip,score from % s where score > 0' % self.table
         self.cursor.execute(sql)
         self.db.commit()
         # 返回多个元组
         fetch_list = list(self.cursor.fetchall())
-        results = ["".join(i) for i in fetch_list]
+        results = [{"ip":i[0],"score":i[1]} for i in fetch_list]
         return results
 
     def delete_one(self, item):
+        param = item["ip"]
         sql = 'delete from % s where ip = % s' % (self.table, '% s')
-        self.cursor.execute(sql, item)
+        self.cursor.execute(sql, param)
         self.db.commit()
 
-    def delete_all(self):
-        sql = 'delete from % s ' % self.table
+    def delete_useless(self):
+        sql = 'delete from % s where score <= 0' % self.table
         self.cursor.execute(sql)
         self.db.commit()
 
     def update_score(self, item):
-        pass
+        data = dict(item)
+        sql = 'update % s set score = %s where ip = %s' % (self.table, '%s', '%s')
+        param = list(data.values())
+        param.reverse()
+        self.cursor.execute(sql, param)
+        self.db.commit()

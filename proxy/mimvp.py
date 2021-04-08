@@ -46,7 +46,7 @@ async def img_recognition(url):
 
 
 async def parse():
-    logger.warning("获取米扑代理...")
+    logger.warning("米扑代理...")
     page_text = await parse_url(proxy_url)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath("//div[@class='free-content']/table[@class='mimvp-tbl free-proxylist-tbl']/tbody/tr")
@@ -61,7 +61,6 @@ async def parse():
         proxy_str = ip + ":" + port
         proxy_list.append(proxy_str.replace(",", ""))
     await save_to_mysql(proxy_list)
-    logger.warning("获取米扑代理完毕!")
 
 
 async def save_to_mysql(proxy_list):

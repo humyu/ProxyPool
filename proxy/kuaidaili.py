@@ -18,7 +18,7 @@ headers = {
 
 
 def get_url_list():
-    return [f"https://www.kuaidaili.com/free/inha/{i}/" for i in range(1, 5)]
+    return [f"https://www.kuaidaili.com/free/inha/{i}/" for i in range(1, 3)]
 
 
 async def parse_url(url):
@@ -33,7 +33,7 @@ async def parse_url(url):
 
 
 async def parse():
-    logger.warning("获取快代理...")
+    logger.warning("快代理...")
     url_list = get_url_list()
     for url in url_list:
         page_text = await parse_url(url)
@@ -49,12 +49,11 @@ async def parse():
             proxy_list.append(proxy.replace(",", ""))
         await save_to_mysql(proxy_list)
         time.sleep(random.randint(1,3))
-    logger.warning("获取快代理完毕!")
 
 
 async def save_to_mysql(proxy_list):
-    for proxy in proxy_list:
-        item = {"proxy": proxy}
-        db_mysql.insert_one(item)
-
+    # for proxy in proxy_list:
+    #     item = {"proxy": proxy}
+    #     db_mysql.insert_one(item)
+    db_mysql.insert_many(proxy_list)
 

@@ -8,28 +8,27 @@ import time
 import aiohttp
 
 sys.path.append("..")
-from setting.db_mysql import DBMysql
 from setting.log import Logger
+from setting import db_aio
 
-db_mysql = DBMysql()
 logger = Logger.get()
 
 headers = {
-    "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language":"zh-CN,zh;q=0.9",
-    "Cache-Control":"max-age=0",
-    "Connection":"keep-alive",
-    "Cookie":"UM_distinctid=178b05e7fa419d-000f2abdce6b45-c3f3568-100200-178b05e7fa5660; CNZZDATA1278691459=1517096328-1617864977-https%253A%252F%252Fcn.bing.com%252F%7C1617864977; Hm_lvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617866686,1617868243; Hm_lpvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617869636",
-    "Host":"ip.jiangxianli.com",
-    "Referer":"https://github.com/jiangxianli/ProxyIpLib",
-    "sec-ch-ua":"'Google Chrome';v='89', 'Chromium';v='89', ';Not A Brand';v='99'",
-    "sec-ch-ua-mobile":"?0",
-    "Sec-Fetch-Dest":"document",
-    "Sec-Fetch-Mode":"navigate",
-    "Sec-Fetch-Site":"cross-site",
-    "Sec-Fetch-User":"?1",
-    "Upgrade-Insecure-Requests":"1",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+    "Cache-Control": "max-age=0",
+    "Connection": "keep-alive",
+    "Cookie": "UM_distinctid=178b05e7fa419d-000f2abdce6b45-c3f3568-100200-178b05e7fa5660; CNZZDATA1278691459=1517096328-1617864977-https%253A%252F%252Fcn.bing.com%252F%7C1617864977; Hm_lvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617866686,1617868243; Hm_lpvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617869636",
+    "Host": "ip.jiangxianli.com",
+    "Referer": "https://github.com/jiangxianli/ProxyIpLib",
+    "sec-ch-ua": "'Google Chrome';v='89', 'Chromium';v='89', ';Not A Brand';v='99'",
+    "sec-ch-ua-mobile": "?0",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "cross-site",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/86.0.4240.193 Safari/537.36"}
 
@@ -50,7 +49,7 @@ async def parse():
     current_page = last_page = 1
     while current_page <= last_page:
         url = f"https://ip.jiangxianli.com/api/proxy_ips?page={current_page}"
-        logger.log(f"提取 {url}")
+        logger.info(f"提取 {url}")
         page_text = await parse_url(url)
         json_str = json.loads(page_text)
         data_list = json_str.get("data").get("data")
@@ -70,8 +69,11 @@ async def parse():
 
 
 async def save_to_mysql(proxy_list):
-    if proxy_list:
-        db_mysql.insert_many(proxy_list)
+    for proxy in proxy_list:
+        r = await db_aio.check(proxy)
+        if r:
+            proxy_list.remove(proxy)
+    await db_aio.insert_many(proxy_list)
 
 
 if __name__ == '__main__':

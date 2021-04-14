@@ -11,7 +11,7 @@ class Logger:
     def get():
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s")
         logger = logging.getLogger("mylogger")
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.INFO)
         # 防止发送重复日志
         if not logger.handlers:
             # 将日志消息发送到输出到Stream，如std.out, std.err或任何file-like对象。

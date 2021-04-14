@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-import aiohttp
-import time
 import random
-from lxml import etree
 import sys
+import time
+
+import aiohttp
+from lxml import etree
 
 sys.path.append("..")
-from setting.db_mysql import DBMysql
 from setting.log import Logger
+from setting import db_aio
 
-db_mysql = DBMysql()
 logger = Logger.get()
 
 headers = {
@@ -33,7 +33,7 @@ async def parse_url(url):
 
 
 async def parse():
-    logger.warning("快代理...")
+    logger.info("快代理...")
     url_list = get_url_list()
     for url in url_list:
         page_text = await parse_url(url)
@@ -48,12 +48,12 @@ async def parse():
             proxy = ip + ":" + port
             proxy_list.append(proxy.replace(",", ""))
         await save_to_mysql(proxy_list)
-        time.sleep(random.randint(1,3))
+        time.sleep(random.randint(1, 3))
 
 
 async def save_to_mysql(proxy_list):
-    # for proxy in proxy_list:
-    #     item = {"proxy": proxy}
-    #     db_mysql.insert_one(item)
-    db_mysql.insert_many(proxy_list)
-
+    for proxy in proxy_list:
+        r = await db_aio.check(proxy)
+        if r:
+            proxy_list.remove(proxy)
+    await db_aio.insert_many(proxy_list)

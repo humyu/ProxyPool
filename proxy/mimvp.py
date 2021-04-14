@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-import aiohttp
-
-from lxml import etree
-import pytesseract
-from PIL import Image
-import requests
+import asyncio
+import re
 import sys
 
-sys.path.append("..")
-from setting.db_mysql import DBMysql
-from setting.log import Logger
+import aiofiles
+import aiohttp
+import pytesseract
+from PIL import Image
+from lxml import etree
 
-db_mysql = DBMysql()
+sys.path.append("..")
+from setting.log import Logger
+from setting import db_aio
+
 logger = Logger.get()
 
 proxy_url = "https://proxy.mimvp.com/freeopen"
@@ -21,32 +22,33 @@ headers = {
                   "Chrome/86.0.4240.193 Safari/537.36"}
 
 
-async def parse_img(url):
-    response = requests.get(url, headers=headers)
-    return response.content
-
-
 async def parse_url(url):
     async with aiohttp.ClientSession() as sess:  # 实例化一个请求对象
         # get/post(url,headers,params/data,proxy="http://ip:port")
         async with await sess.get(url=url, headers=headers) as response:  # 使用get发起请求，返回一个相应对象
-            page_text = await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
+            if url.find("common/ygrandimg") == -1:
+                page_text = await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
+            else:
+                page_text = await response.read()
             return page_text
 
 
 async def img_recognition(url):
-    r = await parse_img(url)
-    with open('img.png', 'wb') as f:
-        f.write(r)
-    image = Image.open("img.png")
+    r = await parse_url(url)
+    image_name_list = re.findall('id=(\d+)&port', url)
+    image_name = "".join(image_name_list)
+    image_name = image_name + ".png"
+    async with aiofiles.open(image_name, 'wb') as f:
+        await f.write(r)
+    image = Image.open(image_name)
     result_str = pytesseract.image_to_string(image).strip()
-    result = result_str.replace("B", "8").replace("O", "0").replace("S", "5")\
-        .replace("Z", "2").replace("l","1").replace("g", "9")
+    result = result_str.replace("B", "8").replace("O", "0").replace("S", "5") \
+        .replace("Z", "2").replace("l", "1").replace("g", "9")
     return result
 
 
 async def parse():
-    logger.warning("米扑代理...")
+    logger.info("米扑代理...")
     page_text = await parse_url(proxy_url)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath("//div[@class='free-content']/table[@class='mimvp-tbl free-proxylist-tbl']/tbody/tr")
@@ -64,15 +66,22 @@ async def parse():
 
 
 async def save_to_mysql(proxy_list):
-    # for proxy in proxy_list:
-    #     item = {"proxy": proxy}
-    #     db_mysql.insert_one(item)
-    db_mysql.insert_many(proxy_list)
+    for proxy in proxy_list:
+        r = await db_aio.check(proxy)
+        if r:
+            proxy_list.remove(proxy)
+    await db_aio.insert_many(proxy_list)
 
 
 async def save_to_file(proxy_list):
     file_path = "ip_in_file.txt"
-    with open(file_path, "w+", encoding="utf-8") as f:
+    async with aiofiles.open(file_path, "w+", encoding="utf-8") as f:
         for content in proxy_list:
-            f.write(content)
-            f.write("\n")
+            await f.write(content)
+            await f.write("\n")
+
+
+if __name__ == '__main__':
+    task = asyncio.ensure_future(parse())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(task)

@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import sys
 
 import aiohttp
-import asyncio
 
 sys.path.append("..")
-from setting.db_mysql import DBMysql
 from setting.log import Logger
 import time
 import random
+from setting import db_aio
 
-db_mysql = DBMysql()
 logger = Logger.get()
 
 test_url = "http://httpbin.org/get"
@@ -35,48 +34,30 @@ async def test(ip, url):
 async def update():
     """更新ip集合，作为定时任务"""
     # 1.从数据库获取ip集
-    proxy_list = db_mysql.get_all()
+    proxy_list = await db_aio.get()
     if proxy_list:
-        logger.warning("更新ip池...")
+        logger.info("更新ip池...")
         for proxy in proxy_list:
             # 2.测试单个ip
             status = await test(proxy["ip"], test_url)
             # 不合格的删除
-            logger.warning(f" {proxy} {status}")
             if status == "disabled":
-                db_mysql.delete_one(proxy)
+                proxy["score"] = 0
             elif status != 200:
                 proxy["score"] -= 1
-                db_mysql.update_score(proxy)
-                logger.warning(f" {proxy} 超时")
             else:
                 proxy["score"] += 1
-                db_mysql.update_score(proxy)
-                logger.warning(f" {proxy} {status}")
+            await db_aio.update_score(proxy)
+            logger.info(f" {proxy} {status}")
             time.sleep(random.randint(2, 4))
-        # logger.warning("更新ip池完毕!")
     else:
-        logger.warning("暂无ip,请等待...")
+        logger.warning("暂无可用ip")
 
 
 async def clean():
     """删除质量差的ip"""
-    db_mysql.delete_useless()
-    logger.warning("删除质量差的ip!")
-
-
-async def get():
-    """接口，作为外部使用的 ip """
-    ip_list = db_mysql.get_all()
-    if not ip_list:
-        logger.warning("暂无ip,请等待...")
-    else:
-        while True:
-            ip = random.choice(ip_list)
-            status = await test(ip, test_url)
-            if status != 200:
-                break
-        return ip
+    await db_aio.delete_useless()
+    logger.info("删除质量差的ip!")
 
 
 if __name__ == '__main__':

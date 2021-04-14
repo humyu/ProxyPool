@@ -4,8 +4,8 @@ MONGO_DB = 'qiushi'
 MONGO_COLLECTION = 'stalk'
 
 MYSQL_HOST = 'localhost'
-MYSQL_DATABASE = 'proxy'
 MYSQL_PORT = 3306
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = '12345678'
+MYSQL_DATABASE = 'proxy'
 MYSQL_TABLE = 't_proxy'

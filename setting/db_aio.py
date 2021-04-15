@@ -21,21 +21,21 @@ async def check(item):
 async def insert_one(item):
     mysql_obj = await get_mysql_obj()
     data = dict(item)
-    exeRtn = await mysql_obj.execute("insert into t_proxy (ip) values (% s)", tuple(data.values()))
-    if exeRtn:
-        print('操作成功')
-    else:
-        print('操作失败')
+    await mysql_obj.execute("insert into t_proxy (ip) values (% s)", tuple(data.values()))
+    # if exeRtn:
+    #     print('操作成功')
+    # else:
+    #     print('操作失败')
 
 
 async def insert_many(item_list):
     tuple_list = [(item, 5, 0) for item in item_list]
     mysql_obj = await get_mysql_obj()
-    exeRtn = await mysql_obj.execute_many("insert into t_proxy (ip,score,times) values (% s, % s, % s)", tuple_list)
-    if exeRtn:
-        print('操作成功')
-    else:
-        print('操作失败')
+    await mysql_obj.execute_many("insert into t_proxy (ip,score,times) values (% s, % s, % s)", tuple_list)
+    # if exeRtn:
+    #     print('操作成功')
+    # else:
+    #     print('操作失败')
 
 
 async def get():
@@ -47,20 +47,20 @@ async def get():
 async def delete_one(item):
     param = item["ip"]
     mysql_obj = await get_mysql_obj()
-    exeRtn = await mysql_obj.execute("delete from t_proxy where ip = % s", param)
-    if exeRtn:
-        print('操作成功')
-    else:
-        print('操作失败')
+    await mysql_obj.execute("delete from t_proxy where ip = % s", param)
+    # if exeRtn:
+    #     print('操作成功')
+    # else:
+    #     print('操作失败')
 
 
 async def delete_useless():
     mysql_obj = await get_mysql_obj()
-    exeRtn = await mysql_obj.execute("delete from t_proxy where score <= 0")
-    if exeRtn:
-        print('操作成功')
-    else:
-        print('操作失败')
+    await mysql_obj.execute("delete from t_proxy where score <= 0")
+    # if exeRtn:
+    #     print('操作成功')
+    # else:
+    #     print('操作失败')
 
 
 async def update_score(item):
@@ -68,8 +68,8 @@ async def update_score(item):
     param = list(data.values())
     param.reverse()
     mysql_obj = await get_mysql_obj()
-    exeRtn = await mysql_obj.execute("update t_proxy set score = %s where ip = %s", param)
-    if exeRtn:
-        print('操作成功')
-    else:
-        print('操作失败')
+    await mysql_obj.execute("update t_proxy set score = %s where ip = %s", param)
+    # if exeRtn:
+    #     print('操作成功')
+    # else:
+    #     print('操作失败')

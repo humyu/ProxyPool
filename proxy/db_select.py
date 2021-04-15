@@ -49,7 +49,7 @@ async def update():
                 proxy["score"] += 1
             await db_aio.update_score(proxy)
             logger.info(f" {proxy} {status}")
-            time.sleep(random.randint(2, 4))
+            await asyncio.sleep(random.randint(2, 4))
     else:
         logger.warning("暂无可用ip")
 

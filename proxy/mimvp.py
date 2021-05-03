@@ -10,8 +10,8 @@ from PIL import Image
 from lxml import etree
 
 sys.path.append("..")
-from setting.log import Logger
-from setting import db_aio
+from db.log import Logger
+from db import aio_mysql_op
 
 logger = Logger.get()
 
@@ -67,10 +67,10 @@ async def parse():
 
 async def save_to_mysql(proxy_list):
     for proxy in proxy_list:
-        r = await db_aio.check(proxy)
+        r = await aio_mysql_op.check(proxy)
         if r:
             proxy_list.remove(proxy)
-    await db_aio.insert_many(proxy_list)
+    await aio_mysql_op.insert_many(proxy_list)
 
 
 async def save_to_file(proxy_list):

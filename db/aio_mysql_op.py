@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from setting.db_aio_mysql import DBMysql
+from db.aio_mysql_base import DBAioMysql
 
 
 async def get_mysql_obj():
-    mysql_obj = DBMysql()
+    mysql_obj = DBAioMysql()
     pool = await mysql_obj.init_pool()
     mysql_obj.pool = pool
     return mysql_obj

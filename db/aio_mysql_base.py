@@ -4,12 +4,12 @@ import traceback
 
 import aiomysql
 
-from setting import db_setting
+from db import db_setting
 
 logobj = logging.getLogger('mysql')
 
 
-class DBMysql:
+class DBAioMysql:
 
     def __init__(self):
         self.conn = None

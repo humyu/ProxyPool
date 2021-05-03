@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pymysql
-from setting import db_setting
+from db import db_setting
 
 
 class DBMysql:

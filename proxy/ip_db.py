@@ -5,10 +5,10 @@ import sys
 import aiohttp
 
 sys.path.append("..")
-from setting.log import Logger
+from db.log import Logger
 import time
 import random
-from setting import db_aio
+from db import aio_mysql_op
 
 logger = Logger.get()
 
@@ -34,7 +34,7 @@ async def test(ip, url):
 async def update():
     """更新ip集合，作为定时任务"""
     # 1.从数据库获取ip集
-    proxy_list = await db_aio.get()
+    proxy_list = await aio_mysql_op.get()
     if proxy_list:
         logger.info("更新ip池...")
         for proxy in proxy_list:
@@ -47,7 +47,7 @@ async def update():
                 proxy["score"] -= 1
             else:
                 proxy["score"] += 1
-            await db_aio.update_score(proxy)
+            await aio_mysql_op.update_score(proxy)
             logger.info(f" {proxy} {status}")
             await asyncio.sleep(random.randint(2, 4))
     else:
@@ -56,7 +56,7 @@ async def update():
 
 async def clean():
     """删除质量差的ip"""
-    await db_aio.delete_useless()
+    await aio_mysql_op.delete_useless()
     logger.info("删除质量差的ip!")
 
 

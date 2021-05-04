@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import random
-import sys
+# import sys
+#
+# sys.path.append("..")
 import time
-
 import aiohttp
 from lxml import etree
-
-sys.path.append("..")
 from db.log import Logger
-from db import aio_mysql_op
+# from db import aiomysql_op
+from db import aioredis_op
 
 logger = Logger.get()
 
@@ -47,13 +47,17 @@ async def parse():
             port = port[0].strip()
             proxy = ip + ":" + port
             proxy_list.append(proxy.replace(",", ""))
-        await save_to_mysql(proxy_list)
+        await save_to_redis(proxy_list)
         time.sleep(random.randint(1, 3))
 
 
-async def save_to_mysql(proxy_list):
+# async def save_to_mysql(proxy_list):
+#     for proxy in proxy_list:
+#         r = await aiomysql_op.check(proxy)
+#         if r:
+#             proxy_list.remove(proxy)
+#     await aiomysql_op.insert_many(proxy_list)
+
+async def save_to_redis(proxy_list):
     for proxy in proxy_list:
-        r = await aio_mysql_op.check(proxy)
-        if r:
-            proxy_list.remove(proxy)
-    await aio_mysql_op.insert_many(proxy_list)
+        await aioredis_op.add(proxy)

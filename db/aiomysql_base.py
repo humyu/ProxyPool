@@ -4,7 +4,7 @@ import traceback
 
 import aiomysql
 
-from db import db_setting
+import config
 
 logobj = logging.getLogger('mysql')
 
@@ -21,11 +21,11 @@ class DBAioMysql:
             __pool = await aiomysql.create_pool(
                 minsize=5,  # 连接池最小值
                 maxsize=10,  # 连接池最大值
-                host=db_setting.MYSQL_HOST,
-                port=db_setting.MYSQL_PORT,
-                user=db_setting.MYSQL_USER,
-                password=db_setting.MYSQL_PASSWORD,
-                db=db_setting.MYSQL_DATABASE,
+                host=config.MYSQL_HOST,
+                port=config.MYSQL_PORT,
+                user=config.MYSQL_USER,
+                password=config.MYSQL_PASSWORD,
+                db=config.MYSQL_DATABASE,
                 autocommit=True,  # 自动提交模式
             )
             return __pool

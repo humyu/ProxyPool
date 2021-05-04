@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import pymysql
-from db import db_setting
+import config
 
 
 class DBMysql:
     def __init__(self):
-        self.host = db_setting.MYSQL_HOST
-        self.port = db_setting.MYSQL_PORT
-        self.user = db_setting.MYSQL_USER
-        self.password = db_setting.MYSQL_PASSWORD
-        self.database = db_setting.MYSQL_DATABASE
-        self.table = db_setting.MYSQL_TABLE
+        self.host = config.MYSQL_HOST
+        self.port = config.MYSQL_PORT
+        self.user = config.MYSQL_USER
+        self.password = config.MYSQL_PASSWORD
+        self.database = config.MYSQL_DATABASE
+        self.table = config.MYSQL_TABLE
         self.db = pymysql.connect(self.host, self.user, self.password, self.database, charset='utf8', port=self.port)
         self.cursor = self.db.cursor()
 

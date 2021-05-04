@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import random
 
-from aio_redis_base import DBAioRedis
-from db.custom_error import PoolEmptyError
+from aioredis_base import DBAioRedis
+from custom_error import PoolEmptyError
 
 MAX_SCORE = 20
 MIN_SCORE = 0
@@ -22,8 +22,9 @@ async def add(proxy, score=INITIAL_SCORE):
     """
     r = await get_aio_redis()
     try:
-        if not r.zscore(REDIS_KEY, proxy):
-            return r.zadd(REDIS_KEY, score, proxy)
+        score_str = await r.zscore(REDIS_KEY, proxy)
+        if not score_str:
+            await r.zadd(REDIS_KEY, score, proxy)
     finally:
         r.close()
         await r.wait_closed()
@@ -35,11 +36,11 @@ async def get():
     """
     r = await get_aio_redis()
     try:
-        result = r.zrangebyscore(REDIS_KEY, MAX_SCORE, MAX_SCORE)
-        if len(result):
-            return random.choice(result)
+        ret_list = await r.zrangebyscore(REDIS_KEY, MAX_SCORE, MAX_SCORE)
+        if len(ret_list):
+            return random.choice(ret_list)
         else:
-            result = r.zrevrange(REDIS_KEY, 0, -1)
+            result = await r.zrevrange(REDIS_KEY, 0, -1)
             if len(result):
                 return random.choice(result)
             else:
@@ -49,19 +50,19 @@ async def get():
         await r.wait_closed()
 
 
-async def update(proxy):
+async def decrease(proxy):
     """
     代理值减一分，小于最小值则删除
     """
     r = await get_aio_redis()
     try:
-        score = r.zscore(REDIS_KEY, proxy)
-        if score and score > MIN_SCORE:
-            print(' 代理 ', proxy, ' 当前分数 ', score, ' 减 1')
-            return r.zincrby(REDIS_KEY, proxy, -1)
+        score_str = await r.zscore(REDIS_KEY, proxy)
+        if score_str and score_str > MIN_SCORE:
+            # print(' 代理 ', proxy, ' 当前分数 ', score_str, ' 减 1')
+            await r.zincrby(REDIS_KEY, -1, proxy)
         else:
-            print(' 代理 ', proxy, ' 当前分数 ', score, ' 移除 ')
-            return r.zrem(REDIS_KEY, proxy)
+            # print(' 代理 ', proxy, ' 当前分数 ', score_str, ' 移除 ')
+            await r.zrem(REDIS_KEY, proxy)
     finally:
         r.close()
         await r.wait_closed()
@@ -73,7 +74,8 @@ async def exists(proxy):
     """
     r = await get_aio_redis()
     try:
-        return not r.zscore(REDIS_KEY, proxy) is None
+        score_str = await r.zscore(REDIS_KEY, proxy)
+        return score_str if not score_str else None
     finally:
         r.close()
         await r.wait_closed()
@@ -85,7 +87,7 @@ async def max(proxy):
     """
     r = await get_aio_redis()
     try:
-        return r.zadd(REDIS_KEY, MAX_SCORE, proxy)
+        await r.zadd(REDIS_KEY, MAX_SCORE, proxy)
     finally:
         r.close()
         await r.wait_closed()
@@ -97,7 +99,7 @@ async def count():
     """
     r = await get_aio_redis()
     try:
-        return r.zcard(REDIS_KEY)
+        await r.zcard(REDIS_KEY)
     finally:
         r.close()
         await r.wait_closed()
@@ -109,7 +111,8 @@ async def all():
     """
     r = await get_aio_redis()
     try:
-        return r.zrangebyscore(REDIS_KEY, MIN_SCORE, MAX_SCORE)
+        ret_list = await r.zrangebyscore(REDIS_KEY, MIN_SCORE, MAX_SCORE)
+        return ret_list
     finally:
         r.close()
         await r.wait_closed()

@@ -2,14 +2,15 @@
 import asyncio
 import json
 import random
-import sys
+# import sys
+#
+# sys.path.append("..")
 import time
-
 import aiohttp
 
-sys.path.append("..")
 from db.log import Logger
-from db import aio_mysql_op
+# from db import aiomysql_op
+from db import aioredis_op
 
 logger = Logger.get()
 
@@ -45,7 +46,7 @@ async def parse_url(url):
 
 
 async def parse():
-    logger.warning("jiangxianli...")
+    logger.info("获取代理...")
     current_page = last_page = 1
     while current_page <= last_page:
         url = f"https://ip.jiangxianli.com/api/proxy_ips?page={current_page}"
@@ -63,17 +64,22 @@ async def parse():
                 port = data.get("port")
                 proxy = ip + ":" + port
                 proxy_list.append(proxy)
-        await save_to_mysql(proxy_list)
+        await save_to_redis(proxy_list)
         time.sleep(random.randint(1, 3))
         current_page = current_page + 1
 
 
-async def save_to_mysql(proxy_list):
+# async def save_to_mysql(proxy_list):
+#     for proxy in proxy_list:
+#         r = await aiomysql_op.check(proxy)
+#         if r:
+#             proxy_list.remove(proxy)
+#     await aiomysql_op.insert_many(proxy_list)
+
+
+async def save_to_redis(proxy_list):
     for proxy in proxy_list:
-        r = await aio_mysql_op.check(proxy)
-        if r:
-            proxy_list.remove(proxy)
-    await aio_mysql_op.insert_many(proxy_list)
+        await aioredis_op.add(proxy)
 
 
 if __name__ == '__main__':

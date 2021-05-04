@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from db.aio_mysql_base import DBAioMysql
+from aiomysql_base import DBAioMysql
 
 
 async def get_mysql_obj():

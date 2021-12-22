@@ -2,6 +2,7 @@ import logging
 
 
 # LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+# "%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"
 # DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 #
 # logging.basicConfig(filename='mylog',filemode='w', level=logging.WARNING, format=LOG_FORMAT, datefmt=DATE_FORMAT)
@@ -9,7 +10,7 @@ import logging
 class Logger:
     @staticmethod
     def get():
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s")
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s - %(message)s")
         logger = logging.getLogger("mylogger")
         logger.setLevel(logging.INFO)
         # 防止发送重复日志

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+该网站每天不定时获取一次 ip
+"""
 import asyncio
 import re
-# import sys
-#
-# sys.path.append("..")
+import sys
+
+sys.path.append("..")
 import aiofiles
 import aiohttp
 import pytesseract
@@ -24,20 +27,23 @@ headers = {
                   "Chrome/86.0.4240.193 Safari/537.36"}
 
 
-async def parse_url(url):
-    async with aiohttp.ClientSession() as sess:  # 实例化一个请求对象
-        # get/post(url,headers,params/data,proxy="http://ip:port")
-        async with await sess.get(url=url,headers=headers) as response:  # 使用get发起请求，返回一个相应对象
+async def parse_url(url, session):
+    # async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=20, ssl=False)) as session:
+    # get/post(url,headers,params/data,proxy="http://ip:port")
+    try:
+        async with await session.get(url=url, headers=headers) as response:
             if url.find("common/ygrandimg") == -1:
-                page_text = await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
+                page_text = await response.text()
             else:
                 page_text = await response.read()
             return page_text
+    except Exception as e:
+        logger.error(f"错误:{e}")
 
 
-async def img_recognition(url):
-    r = await parse_url(url)
-    image_name_list = re.findall('id=(\d+)&port', url)
+async def img_recognition(url, session):
+    r = await parse_url(url, session)
+    image_name_list = re.findall(r'id=(\d+)&port', url)
     image_name = "".join(image_name_list)
     image_name = image_name + ".png"
     async with aiofiles.open(image_name, 'wb') as f:
@@ -49,9 +55,9 @@ async def img_recognition(url):
     return result
 
 
-async def parse():
+async def parse(session):
     logger.info("米扑代理...")
-    page_text = await parse_url(proxy_url)
+    page_text = await parse_url(proxy_url, session)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath(
         "//div[@class='free-content']/table[@class='mimvp-tbl free-proxylist-tbl']/tbody/tr")
@@ -63,10 +69,11 @@ async def parse():
             "./td[@class='free-proxylist-tbl-proxy-port']/img/@src")
         port_url = port_url[0].strip()
         port_url = "https://proxy.mimvp.com/" + port_url
-        port = await img_recognition(port_url)
+        port = await img_recognition(port_url, session)
         proxy_str = ip + ":" + port
         proxy_list.append(proxy_str.replace(",", ""))
     await save_to_redis(proxy_list)
+    logger.info("米扑代理已获取")
 
 
 # async def save_to_mysql(proxy_list):
@@ -90,7 +97,7 @@ async def save_to_redis(proxy_list):
         await aioredis_op.add(proxy)
 
 
-if __name__ == '__main__':
-    task = asyncio.ensure_future(parse())
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(task)
+# if __name__ == '__main__':
+#     task = asyncio.ensure_future(parse())
+#     loop = asyncio.get_event_loop()
+#     loop.run_until_complete(task)

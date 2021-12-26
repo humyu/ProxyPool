@@ -2,6 +2,8 @@
 """
 该网站数据大概每五分钟检测一次
 """
+import asyncio
+import aiohttp
 import json
 import random
 import sys
@@ -48,7 +50,6 @@ async def parse_url(url, session):
         logger.error(f"错误:{e}")
 
 
-# 全部代理
 async def parse(session):
     logger.info("获取代理...")
     current_page = last_page = 1
@@ -63,39 +64,15 @@ async def parse(session):
         proxy_list = []
         for data in data_list:
             country = data.get("country")
-            if country == "中国":
+            anonymity = data.get("anonymity")
+            if country == "中国" and anonymity == 2:
                 ip = data.get("ip")
                 port = data.get("port")
                 proxy = ip + ":" + port
                 proxy_list.append(proxy)
         await save_to_redis(proxy_list)
-        time.sleep(random.randint(1, 3))
+        time.sleep(random.randint(2, 4))
         current_page = current_page + 1
-
-
-# 高匿代理
-async def parse2(session):
-    logger.info("获取高匿代理...")
-    url = "https://ip.jiangxianli.com/?page=1&anonymity=2"
-    html_str = await parse_url(url, session)
-    tree = etree.HTML(html_str)
-    tr_list = tree.xpath("//div[@class='layui-form']//tbody//tr")
-    proxy_list = []
-    for tr in tr_list:
-        ip = tr.xpath("./td[1]/text()")
-        if len(ip) <= 0:
-            continue
-        ip = ip[0].strip()
-        port = tr.xpath("./td[2]/text()")
-        port = port[0].strip()
-        # check_date = tr.xpath("./td[last()-1]/text()")
-        # check_date = check_date[0].strip()
-        # print(type(check_date))
-        proxy = ip + ":" + port
-        proxy_list.append(proxy)
-    await save_to_redis(proxy_list)
-    time.sleep(random.randint(1, 3))
-    logger.info("高匿代理获取完毕...")
 
 
 # async def save_to_mysql(proxy_list):
@@ -111,6 +88,6 @@ async def save_to_redis(proxy_list):
         await aioredis_op.add(proxy)
 
 # if __name__ == '__main__':
-#     task = asyncio.ensure_future(parse2())
+#     task = asyncio.ensure_future(parse())
 #     loop = asyncio.get_event_loop()
 #     loop.run_until_complete(task)

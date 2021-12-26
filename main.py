@@ -38,7 +38,7 @@ async def start_scheduler():
     # 每小时运行一次
     scheduler.add_job(kuaidaili.run, 'interval', args=(session,), hours=1)
     # 每六分钟运行一次
-    scheduler.add_job(jiangxianli.parse2, 'interval', args=(session,), minutes=6)
+    scheduler.add_job(jiangxianli.parse, 'interval', args=(session,), minutes=6)
     # 每二十分钟更新一次ip
     scheduler.add_job(ip_aiodb.update, 'interval', args=(session,), minutes=25, max_instances=3)
     # 开启任务

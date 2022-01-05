@@ -3,7 +3,6 @@
 该网站数据大概每五分钟检测一次
 """
 import asyncio
-import aiohttp
 import json
 import random
 import sys
@@ -11,9 +10,6 @@ import sys
 sys.path.append("..")
 import time
 
-from lxml import etree
-
-# from db import aiomysql_op
 from db import aioredis_op
 from db.log import Logger
 
@@ -40,12 +36,10 @@ headers = {
 
 
 async def parse_url(url, session):
-    # async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=20, ssl=False)) as session:
+    await asyncio.sleep(random.uniform(1, 3))
     try:
-        # get/post(url,headers,params/data,proxy="http://ip:port")
         async with await session.get(url=url, headers=headers) as response:  # 使用get发起请求，返回一个相应对象
-            page_text = await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
-            return page_text
+            return await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
     except Exception as e:
         logger.error(f"错误:{e}")
 
@@ -75,19 +69,6 @@ async def parse(session):
         current_page = current_page + 1
 
 
-# async def save_to_mysql(proxy_list):
-#     for proxy in proxy_list:
-#         r = await aiomysql_op.check(proxy)
-#         if r:
-#             proxy_list.remove(proxy)
-#     await aiomysql_op.insert_many(proxy_list)
-
-
 async def save_to_redis(proxy_list):
     for proxy in proxy_list:
         await aioredis_op.add(proxy)
-
-# if __name__ == '__main__':
-#     task = asyncio.ensure_future(parse())
-#     loop = asyncio.get_event_loop()
-#     loop.run_until_complete(task)

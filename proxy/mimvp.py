@@ -3,17 +3,16 @@
 该网站每天不定时获取一次 ip
 """
 import asyncio
+import random
 import re
 import sys
 
 sys.path.append("..")
 import aiofiles
-import aiohttp
 import pytesseract
 from PIL import Image
 from lxml import etree
 
-# from db import aio_mysql_op
 from db import aioredis_op
 from db.log import Logger
 
@@ -28,8 +27,7 @@ headers = {
 
 
 async def parse_url(url, session):
-    # async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=20, ssl=False)) as session:
-    # get/post(url,headers,params/data,proxy="http://ip:port")
+    await asyncio.sleep(random.uniform(1, 3))
     try:
         async with await session.get(url=url, headers=headers) as response:
             if url.find("common/ygrandimg") == -1:
@@ -76,14 +74,6 @@ async def parse(session):
     logger.info("米扑代理已获取")
 
 
-# async def save_to_mysql(proxy_list):
-#     for proxy in proxy_list:
-#         r = await aio_mysql_op.check(proxy)
-#         if r:
-#             proxy_list.remove(proxy)
-#     await aio_mysql_op.insert_many(proxy_list)
-
-
 async def save_to_file(proxy_list):
     file_path = "ip_in_file.txt"
     async with aiofiles.open(file_path, "w+", encoding="utf-8") as f:
@@ -95,9 +85,3 @@ async def save_to_file(proxy_list):
 async def save_to_redis(proxy_list):
     for proxy in proxy_list:
         await aioredis_op.add(proxy)
-
-
-# if __name__ == '__main__':
-#     task = asyncio.ensure_future(parse())
-#     loop = asyncio.get_event_loop()
-#     loop.run_until_complete(task)

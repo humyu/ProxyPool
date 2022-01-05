@@ -2,17 +2,13 @@
 """
 该网站每天更新一次 ip，每小时获取一个新 ip
 """
-import random
 import asyncio
-# import sys
-#
-# sys.path.append("..")
-import time
+import random
+import sys
 
-import aiohttp
+sys.path.append("..")
 from lxml import etree
 
-# from db import aiomysql_op
 from db import aioredis_op
 from db.log import Logger
 
@@ -24,15 +20,14 @@ headers = {
 
 
 def get_url_list():
-    return [f"https://www.kuaidaili.com/free/inha/{i}/" for i in range(1, 8)]
+    return [f"https://www.kuaidaili.com/free/inha/{i}/" for i in range(1, 3)]
 
 
 async def parse_url(url, session):
-    # get/post(url,headers,params/data,proxy="http://ip:port")
+    await asyncio.sleep(random.uniform(1, 3))
     try:
         async with await session.get(url=url, headers=headers) as response:
-            page_text = await response.text()
-            return page_text
+            return await response.text()
     except Exception as e:
         logger.error(f"错误:{e}")
 
@@ -50,15 +45,7 @@ async def parse(url, session):
         proxy = ip + ":" + port
         proxy_list.append(proxy.replace(",", ""))
     await save_to_redis(proxy_list)
-    time.sleep(random.randint(1, 3))
 
-
-# async def save_to_mysql(proxy_list):
-#     for proxy in proxy_list:
-#         r = await aiomysql_op.check(proxy)
-#         if r:
-#             proxy_list.remove(proxy)
-#     await aiomysql_op.insert_many(proxy_list)
 
 async def save_to_redis(proxy_list):
     for proxy in proxy_list:
@@ -76,4 +63,3 @@ async def run(session):
         task = asyncio.ensure_future(c)
         tasks.append(task)
     logger.info("快代理已获取")
-

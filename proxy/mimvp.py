@@ -54,7 +54,6 @@ async def img_recognition(url, session):
 
 
 async def parse(session):
-    logger.info("米扑代理...")
     page_text = await parse_url(proxy_url, session)
     tree = etree.HTML(page_text)
     tr_list = tree.xpath(
@@ -71,7 +70,6 @@ async def parse(session):
         proxy_str = ip + ":" + port
         proxy_list.append(proxy_str.replace(",", ""))
     await save_to_redis(proxy_list)
-    logger.info("米扑代理已获取")
 
 
 async def save_to_file(proxy_list):
@@ -85,3 +83,9 @@ async def save_to_file(proxy_list):
 async def save_to_redis(proxy_list):
     for proxy in proxy_list:
         await aioredis_op.add(proxy)
+
+
+async def run(session):
+    logger.info("米扑代理..")
+    await parse(session)
+    logger.info("米扑代理已获取")

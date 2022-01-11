@@ -3,6 +3,9 @@ import asyncio
 
 from proxy import ip_aiodb
 from web_session import WebSession
+from proxy import ip3366
+from proxy import kuaidaili
+from proxy import mimvp
 
 
 async def close():
@@ -17,7 +20,7 @@ if __name__ == '__main__':
     else:
         session = WebSession.session
 
-    task = asyncio.ensure_future(ip_aiodb.update(session))
+    task = asyncio.ensure_future(mimvp.run(session))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
     loop.run_until_complete(close())

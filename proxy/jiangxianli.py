@@ -45,7 +45,7 @@ async def parse_url(url, session):
 
 
 async def parse(session):
-    logger.info("获取代理...")
+
     current_page = last_page = 1
     while current_page <= last_page:
         url = f"https://ip.jiangxianli.com/api/proxy_ips?page={current_page}"
@@ -72,3 +72,9 @@ async def parse(session):
 async def save_to_redis(proxy_list):
     for proxy in proxy_list:
         await aioredis_op.add(proxy)
+
+
+async def run(session):
+    logger.info("获取jiangxianli代理..")
+    await parse(session)
+    logger.info("jiangxianli代理已获取")

@@ -6,7 +6,7 @@ from custom_error import PoolEmptyError
 
 MAX_SCORE = 20
 MIN_SCORE = 0
-INITIAL_SCORE = 5
+INITIAL_SCORE = 10
 REDIS_KEY = 'proxies'
 
 

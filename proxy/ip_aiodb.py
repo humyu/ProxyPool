@@ -35,7 +35,7 @@ async def test(ip, session):
     try:
         async with semaphore:
             async with session.get(url=test_url, headers=headers, proxy=proxy, timeout=10) as response:
-                return "bad" if response.status != 200 else 200
+                return "disabled" if response.status != 200 else "ok"
     except Exception as e:
         # logger.error(f"错误:{e}")
         return "disabled"
@@ -51,7 +51,7 @@ async def update(session):
             # 2.测试单个ip
             status = await test(proxy, session)
             # logger.info(f" {proxy} {status}")
-            if status == "disabled" or "bad":
+            if status == "disabled":
                 # 不合格的扣分
                 await aioredis_op.decrease(proxy)
             else:

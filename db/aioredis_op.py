@@ -6,7 +6,7 @@ from custom_error import PoolEmptyError
 
 MAX_SCORE = 20
 MIN_SCORE = 0
-INITIAL_SCORE = 10
+INITIAL_SCORE = 6
 REDIS_KEY = 'proxies'
 
 
@@ -30,7 +30,7 @@ async def add(proxy, score=INITIAL_SCORE):
         await r.wait_closed()
 
 
-async def get():
+async def get_random():
     """
     随机获取有效代理
     """
@@ -52,7 +52,7 @@ async def get():
 
 async def decrease(proxy):
     """
-    代理值减一分，小于最小值则删除
+    代理值减 1 分，小于最小值则删除
     """
     r = await get_aio_redis()
     try:
@@ -105,7 +105,7 @@ async def count():
         await r.wait_closed()
 
 
-async def all():
+async def get_all():
     """
     获取全部代理
     """

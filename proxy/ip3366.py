@@ -3,6 +3,7 @@
 该网站每天更新一次 ip，每小时获取一个新 ip
 """
 import asyncio
+import aiohttp
 import random
 import sys
 
@@ -24,7 +25,7 @@ headers = {
     'DNT': '1',
     'Host': 'www.ip3366.net',
     'Pragma': 'no-cache',
-    'Referer': 'http://www.ip3366.net/?stype=1&page=7',
+    'Referer': 'http://www.ip3366.net/',
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'}
 
@@ -66,6 +67,6 @@ async def run(session):
     logger.info("获取云代理..")
     url_list = get_url_list()
     for url in url_list:
-        logger.info(f"提取 {url}")
+        # logger.info(f"提取 {url}")
         await parse(url, session)
     logger.info("云代理已获取")

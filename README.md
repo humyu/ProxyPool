@@ -4,7 +4,7 @@
 - 异步维护ip池
   - aiofiles, aiomysql, aioredis等异步库
 - 定时任务
-  - 使用AsyncIOScheduler：当你的程序使用了asyncio（一个异步框架）的时候使用
+  - 使用`AsyncIOScheduler`：当你的程序使用了asyncio（一个异步框架）的时候使用
 
 #### 代理 ip 
 - 准备一堆ip地址，组成ip池，随机选择一个ip来使用

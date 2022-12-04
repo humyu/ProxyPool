@@ -4,11 +4,11 @@ import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from web_session import WebSession
-from proxy import ip_aiodb
+from proxy import detect
 from proxy import jiangxianli
 from proxy import kuaidaili
-from proxy import mimvp
 from proxy import ip3366
+from proxy import seofangfa
 
 
 async def start_scheduler():
@@ -21,15 +21,16 @@ async def start_scheduler():
     # 发布定时任务
     scheduler = AsyncIOScheduler()
     # 每周每周一到周日定时运行一次
-    scheduler.add_job(mimvp.run, 'cron', args=(session,), day_of_week='mon-sun', hour=22, minute=00)
+    # scheduler.add_job(mimvp.run, 'cron', args=(session,), day_of_week='mon-sun', hour=22, minute=00)
     # 每小时运行一次
     scheduler.add_job(kuaidaili.run, 'interval', args=(session,), hours=1)
     # 每两小时运行一次
-    scheduler.add_job(ip3366.run, 'interval', args=(session,), hours=1.5)
+    scheduler.add_job(ip3366.run, 'interval', args=(session,), hours=1)
     # 每十分钟运行一次
-    scheduler.add_job(jiangxianli.run, 'interval', args=(session,), minutes=9)
+    scheduler.add_job(jiangxianli.run, 'interval', args=(session,), minutes=30)
+    scheduler.add_job(seofangfa.run, 'interval', args=(session,), minutes=10)
     # 每二十分钟更新一次ip
-    scheduler.add_job(ip_aiodb.update, 'interval', args=(session,), minutes=20, max_instances=2)
+    scheduler.add_job(detect.update, 'interval', args=(session,), minutes=12, max_instances=2)
     # 开启任务
     scheduler.start()
 

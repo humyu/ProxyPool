@@ -49,11 +49,13 @@ async def parse(session):
     current_page = last_page = 1
     while current_page <= last_page:
         url = f"https://ip.jiangxianli.com/api/proxy_ips?page={current_page}"
-        logger.info(f"提取 {url}")
+        # logger.info(f"jiangxianli 代理第 {current_page} 页")
         page_text = await parse_url(url, session)
         json_str = json.loads(page_text)
         data_list = json_str.get("data").get("data")
+        # 当前页码
         current_page = json_str.get("data").get("current_page")
+        # 最后一页页码
         last_page = json_str.get("data").get("last_page")
         proxy_list = []
         for data in data_list:

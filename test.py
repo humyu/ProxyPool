@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from proxy import ip_aiodb
+from proxy import detect
 from web_session import WebSession
 from proxy import ip3366
 from proxy import kuaidaili
-from proxy import mimvp
 
 
 async def close():
@@ -20,7 +19,8 @@ if __name__ == '__main__':
     else:
         session = WebSession.session
 
-    task = asyncio.ensure_future(mimvp.run(session))
+    task = asyncio.ensure_future(detect.update(session))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
     loop.run_until_complete(close())
+    loop.close()

@@ -13,6 +13,7 @@ async def run():
         data_list = await f.readlines()
     for data in data_list:
         data = data.strip()
+        print(data)
         await aioredis_op.add(data)
 
 

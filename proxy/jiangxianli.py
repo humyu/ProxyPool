@@ -5,11 +5,11 @@
 import asyncio
 import json
 import random
+import time
 import sys
 
 sys.path.append("..")
-import time
-
+from aiohttp import TCPConnector
 from db import aioredis_op
 from db.log import Logger
 
@@ -21,9 +21,9 @@ headers = {
     "Accept-Language": "zh-CN,zh;q=0.9",
     "Cache-Control": "max-age=0",
     "Connection": "keep-alive",
-    "Cookie": "UM_distinctid=178b05e7fa419d-000f2abdce6b45-c3f3568-100200-178b05e7fa5660; CNZZDATA1278691459=1517096328-1617864977-https%253A%252F%252Fcn.bing.com%252F%7C1617864977; Hm_lvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617866686,1617868243; Hm_lpvt_b72418f3b1d81bbcf8f99e6eb5d4e0c3=1617869636",
+    "DNT": "1",
     "Host": "ip.jiangxianli.com",
-    "Referer": "https://github.com/jiangxianli/ProxyIpLib",
+    "Pragma": "no-cache",
     "sec-ch-ua": "'Google Chrome';v='89', 'Chromium';v='89', ';Not A Brand';v='99'",
     "sec-ch-ua-mobile": "?0",
     "Sec-Fetch-Dest": "document",
@@ -38,14 +38,13 @@ headers = {
 async def parse_url(url, session):
     await asyncio.sleep(random.uniform(1, 3))
     try:
-        async with await session.get(url=url, headers=headers) as response:  # 使用get发起请求，返回一个相应对象
-            return await response.text()  # text()获取字符串形式的相应数据  read()获取byte类型的响应数据
+        async with await session.get(url=url, headers=headers) as response:
+            return await response.text()
     except Exception as e:
         logger.error(f"错误:{e}")
 
 
 async def parse(session):
-
     current_page = last_page = 1
     while current_page <= last_page:
         url = f"https://ip.jiangxianli.com/api/proxy_ips?page={current_page}"

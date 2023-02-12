@@ -12,8 +12,11 @@ REDIS_KEY = 'proxies'
 
 
 async def get_aio_redis():
-    db_aio_redis = DBAioRedis()
-    pool = await db_aio_redis.init_pool()
+    # db_aio_redis = DBAioRedis()
+    if DBAioRedis.pool is None:
+        pool = await DBAioRedis.init_pool()
+    else:
+        pool = DBAioRedis.pool
     r = aioredis.Redis(connection_pool=pool)
     return r
 
@@ -23,20 +26,17 @@ async def add(proxy, score=INITIAL_SCORE):
     添加代理
     """
     r = await get_aio_redis()
-    # try:
-    #     score_str = await r.zscore(REDIS_KEY, proxy)
-    #     if not score_str:
-    #         await r.zadd(REDIS_KEY, score, proxy)
-    # finally:
-    #     await r.close()
-    # score_str = await r.zscore(REDIS_KEY, proxy)
+    try:
+        score_str = await r.zscore(REDIS_KEY, proxy)
+        if not score_str:
+            # print("添加代理...")
+            await r.zadd(REDIS_KEY, {proxy: score})
+    finally:
+        await r.close()
+
+    # score_str = await r.execute_command("zscore", REDIS_KEY, proxy)
     # if not score_str:
-    #     await r.zadd(REDIS_KEY, score, proxy)
-
-    score_str = await r.execute_command("zscore", REDIS_KEY, proxy)
-    if not score_str:
-        await r.execute_command("zadd", REDIS_KEY, score, proxy)
-
+    #     await r.execute_command("zadd", REDIS_KEY, score, proxy)
 
 
 async def get_random():
@@ -98,7 +98,7 @@ async def max(proxy):
     """
     r = await get_aio_redis()
     try:
-        await r.zadd(REDIS_KEY, MAX_SCORE, proxy)
+        await r.zadd(REDIS_KEY, {proxy: MAX_SCORE})
     finally:
         await r.close()
 

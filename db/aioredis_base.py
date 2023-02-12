@@ -3,24 +3,22 @@ import aioredis
 
 
 class DBAioRedis:
+    pool = None
 
-    def __init__(self):
-        self.pool = None
+    @classmethod
+    async def init_pool(cls):
+        cls.pool = aioredis.ConnectionPool.from_url(
+            "redis://default:foobared@localhost:6379/7",
+            encoding="utf-8",
+            decode_responses=True
+        )
+        print(f"统一连接池: {cls.pool}")
+        return cls.pool
 
-    async def init_pool(self):
-        if not self.pool:
-            self.pool = aioredis.ConnectionPool.from_url(
-                "redis://default:foobared@localhost:6379/7",
-                encoding="utf-8",
-                decode_responses=True
-            )
-        return self.pool
-
-    async def close(self):
-        # if self.pool:
-        #     self.pool.close()
-        #     await self.pool.wait_closed()
-        pass
+    @classmethod
+    async def close(cls):
+        if cls.pool is not None:
+            return cls.pool.disconnect()
 
     async def excute(self, key, member):
         pass

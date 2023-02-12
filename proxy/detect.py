@@ -10,7 +10,7 @@ from db.log import Logger
 
 logger = Logger.get()
 
-test_url = "https://mmzztt.com/"
+test_url = "https://www.csdn.net"
 
 headers = {'authority': 'www.csdn.net', 'method': 'GET', 'path': '/', 'scheme': 'https',
                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -44,7 +44,7 @@ async def update(session):
     # 1.从数据库获取ip集
     proxy_list = await aioredis_op.get_all()
     if proxy_list:
-        logger.info(">>>ip池更新中>>>")
+        logger.info(">>>>>>ip池更新中>>>>>>")
         for proxy in proxy_list:
             # 2.测试单个ip
             status = await test(proxy, session)
@@ -54,6 +54,6 @@ async def update(session):
                 await aioredis_op.decrease(proxy)
             else:
                 await aioredis_op.max(proxy)
-        logger.info("<<<ip池已更新<<<")
+        logger.info("<<<<<<ip池已更新<<<<<<")
     else:
         logger.warning("暂无可用ip")

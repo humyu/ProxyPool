@@ -5,6 +5,9 @@ from proxy import detect
 from web_session import WebSession
 from proxy import ip3366
 from proxy import kuaidaili
+from proxy import seofangfa
+from proxy import jiangxianli
+from db.aioredis_base import DBAioRedis
 
 
 async def close():
@@ -19,8 +22,14 @@ if __name__ == '__main__':
     else:
         session = WebSession.session
 
-    task = asyncio.ensure_future(detect.update(session))
+    print(f"统一会话 WebSession：{WebSession}")
+
+    # if DBAioRedis.pool is None:
+    #     pool = DBAioRedis.init_pool()
+    # else:
+    #     pool = DBAioRedis.pool
+
+    task = asyncio.ensure_future(jiangxianli.run(session))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
     loop.run_until_complete(close())
-    loop.close()

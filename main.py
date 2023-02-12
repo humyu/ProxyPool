@@ -18,18 +18,21 @@ async def start_scheduler():
     else:
         session = WebSession.session
 
+    print(f"统一会话 WebSession：{WebSession}")
+
     # 发布定时任务
     scheduler = AsyncIOScheduler()
     # 每周每周一到周日定时运行一次
     # scheduler.add_job(mimvp.run, 'cron', args=(session,), day_of_week='mon-sun', hour=22, minute=00)
     # 每小时运行一次
     scheduler.add_job(kuaidaili.run, 'interval', args=(session,), hours=1)
-    # 每两小时运行一次
+    # 每小时运行一次
     scheduler.add_job(ip3366.run, 'interval', args=(session,), hours=1)
-    # 每十分钟运行一次
+    # 每三十分钟运行一次
     scheduler.add_job(jiangxianli.run, 'interval', args=(session,), minutes=30)
+    # 每十分钟运行一次
     scheduler.add_job(seofangfa.run, 'interval', args=(session,), minutes=10)
-    # 每二十分钟更新一次ip
+    # 每十二分钟更新一次ip
     scheduler.add_job(detect.update, 'interval', args=(session,), minutes=12, max_instances=2)
     # 开启任务
     scheduler.start()

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from proxy import detect
+from proxy import aio_detect
 from web_session import WebSession
 from proxy import ip3366
-from proxy import kuaidaili
+from proxy import kxdaili
 from proxy import seofangfa
 from proxy import jiangxianli
 from db.aioredis_base import DBAioRedis
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # else:
     #     pool = DBAioRedis.pool
 
-    task = asyncio.ensure_future(jiangxianli.run(session))
+    task = asyncio.ensure_future(aio_detect.update(session))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
     loop.run_until_complete(close())

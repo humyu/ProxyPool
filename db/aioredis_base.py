@@ -18,7 +18,7 @@ class DBAioRedis:
     @classmethod
     async def close(cls):
         if cls.pool is not None:
-            return cls.pool.disconnect()
+            await cls.pool.disconnect()
 
     async def excute(self, key, member):
         pass

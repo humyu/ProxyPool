@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
+
 import aioredis
 
 from aioredis_base import DBAioRedis
@@ -8,6 +9,7 @@ from custom_error import PoolEmptyError
 MAX_SCORE = 20
 MIN_SCORE = 0
 INITIAL_SCORE = 10
+REDUCE_SCORE = -4
 REDIS_KEY = 'proxies'
 
 
@@ -60,7 +62,7 @@ async def get_random():
 
 async def decrease(proxy):
     """
-    代理值减 2 分，小于最小值则删除
+    代理值减分，小于最小值则删除
     """
     r = await get_aio_redis()
     try:
@@ -72,8 +74,9 @@ async def decrease(proxy):
         #     # print(' 代理 ', proxy, ' 当前分数 ', score_str, ' 移除 ')
         #     await r.zrem(REDIS_KEY, proxy)
         # 避免下一次检测时再次判断不合格的代理
-        await r.zincrby(REDIS_KEY, -2, proxy)
-        score_str = await r.zscore(REDIS_KEY, proxy)
+        # 降低分数，并返回降低后的分数
+        score_str = await r.zincrby(REDIS_KEY, REDUCE_SCORE, proxy)
+        # 判断分数是否小于 MIN_SCORE
         if score_str <= MIN_SCORE:
             await r.zrem(REDIS_KEY, proxy)
     finally:
@@ -116,7 +119,7 @@ async def count():
 
 async def get_all():
     """
-    获取全部代理
+    获取全部大于 MIN_SCORE 的代理
     """
     r = await get_aio_redis()
     try:
